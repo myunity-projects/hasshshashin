@@ -10,6 +10,9 @@ public class Player : MonoBehaviour
 
     public PlayerIdleState IdleState { get; private set; }
     public PlayerMoveState MoveState { get; private set; }
+    public PlayerJumpState JumpState { get; private set; }
+    public PlayerInAirState InAirState { get; private set; }
+    public PlayerLandState LandState { get; private set; }
 
     [SerializeField] private PlayerData playerData;
 
@@ -25,6 +28,12 @@ public class Player : MonoBehaviour
 
     #endregion
 
+    #region Check Transforms
+
+    [SerializeField] private Transform groundCheck;
+
+    #endregion
+
     #region Other Variables
 
     public Vector2 CurrentVelocity { get; private set; }
@@ -35,6 +44,8 @@ public class Player : MonoBehaviour
 
     private string idleAnimName = "idle";
     private string moveAnimName = "move";
+    private string jumpAnimName = "inAir";
+    private string landAnimName = "land";
 
     #endregion
 
@@ -46,6 +57,9 @@ public class Player : MonoBehaviour
 
         IdleState = new PlayerIdleState(this, StateMachine, playerData, idleAnimName);
         MoveState = new PlayerMoveState(this, StateMachine, playerData, moveAnimName);
+        JumpState = new PlayerJumpState(this, StateMachine, playerData, jumpAnimName);
+        InAirState = new PlayerInAirState(this, StateMachine, playerData, jumpAnimName);
+        LandState = new PlayerLandState(this, StateMachine, playerData, landAnimName);
     }
 
     private void Start()
@@ -81,9 +95,21 @@ public class Player : MonoBehaviour
         CurrentVelocity = workspace;
     }
 
+    public void SetVelocityY(float velocity)
+    {
+        workspace.Set(CurrentVelocity.x, velocity);
+        PlayerRigidbody2D.velocity = workspace;
+        CurrentVelocity = workspace;
+    }
+
     #endregion
 
     #region CheckFunctions
+
+    public bool CheckIfGrounded()
+    {
+        return Physics2D.OverlapCircle(groundCheck.position, playerData.groundCheckRadius, playerData.whatIsGround);
+    }
 
     public void CheckIfShouldFlip(int xInput)
     {
@@ -96,6 +122,16 @@ public class Player : MonoBehaviour
     #endregion
 
     #region Other Functions
+
+    private void AnimationTrigger()
+    {
+        StateMachine.CurrentState.AnimationTrigger();
+    }
+
+    private void AnimationFinishTrigger()
+    {
+        StateMachine.CurrentState.AnimationFinishTrigger();
+    }
 
     private void Flip()
     {
