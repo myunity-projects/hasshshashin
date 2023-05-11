@@ -13,6 +13,10 @@ public class Player : MonoBehaviour
     public PlayerJumpState JumpState { get; private set; }
     public PlayerInAirState InAirState { get; private set; }
     public PlayerLandState LandState { get; private set; }
+    public PlayerWallGrabState WallGrabState { get; private set; }
+    public PlayerLedgeClimbState LedgeClimbState { get; private set; }
+    public PlayerAttackState PrimaryAttackState { get; private set; }
+    public PlayerAttackState SecondaryAttackState { get; private set; }
 
     [SerializeField] private PlayerData playerData;
 
@@ -31,6 +35,8 @@ public class Player : MonoBehaviour
     #region Check Transforms
 
     [SerializeField] private Transform groundCheck;
+    [SerializeField] private Transform wallCheck;
+    [SerializeField] private Transform ledgeCheck;
 
     #endregion
 
@@ -42,10 +48,17 @@ public class Player : MonoBehaviour
 
     private Vector2 workspace;
 
+    #endregion
+
+    #region Animations Names Variables
+
     private string idleAnimName = "idle";
     private string moveAnimName = "move";
     private string jumpAnimName = "inAir";
     private string landAnimName = "land";
+    private string wallGrabAnimName = "wallGrab";
+    private string ledgeClimbAnimName = "ledgeClimbState";
+    private string attackAnimName = "attack";
 
     #endregion
 
@@ -60,6 +73,10 @@ public class Player : MonoBehaviour
         JumpState = new PlayerJumpState(this, StateMachine, playerData, jumpAnimName);
         InAirState = new PlayerInAirState(this, StateMachine, playerData, jumpAnimName);
         LandState = new PlayerLandState(this, StateMachine, playerData, landAnimName);
+        WallGrabState = new PlayerWallGrabState(this, StateMachine, playerData, wallGrabAnimName);
+        LedgeClimbState = new PlayerLedgeClimbState(this, StateMachine, playerData, ledgeClimbAnimName);
+        PrimaryAttackState = new PlayerAttackState(this, StateMachine, playerData, attackAnimName);
+        SecondaryAttackState = new PlayerAttackState(this, StateMachine, playerData, attackAnimName);
     }
 
     private void Start()
@@ -88,6 +105,12 @@ public class Player : MonoBehaviour
 
     #region Set Functions
 
+    public void SetVelocityZero()
+    {
+        PlayerRigidbody2D.velocity = Vector2.zero;
+        CurrentVelocity = Vector2.zero;
+    }
+
     public void SetVelocityX(float velocity)
     {
         workspace.Set(velocity, CurrentVelocity.y);
@@ -111,6 +134,16 @@ public class Player : MonoBehaviour
         return Physics2D.OverlapCircle(groundCheck.position, playerData.groundCheckRadius, playerData.whatIsGround);
     }
 
+    public bool CheckIfTouchingWall()
+    {
+        return Physics2D.Raycast(wallCheck.position, Vector2.right * FacingDirection, playerData.wallCheckDistance, playerData.whatIsGround);
+    }
+
+    public bool CheckIfTouchingLedge()
+    {
+        return Physics2D.Raycast(ledgeCheck.position, Vector2.right * FacingDirection, playerData.wallCheckDistance, playerData.whatIsGround);
+    }
+
     public void CheckIfShouldFlip(int xInput)
     {
         if(xInput != 0 && xInput != FacingDirection)
@@ -122,6 +155,17 @@ public class Player : MonoBehaviour
     #endregion
 
     #region Other Functions
+
+    public Vector2 DetermineCornerPosition()
+    {
+        RaycastHit2D xHit = Physics2D.Raycast(wallCheck.position, Vector2.right * FacingDirection, playerData.wallCheckDistance, playerData.whatIsGround);
+        float xDistance = xHit.distance;
+        RaycastHit2D yHit = Physics2D.Raycast(ledgeCheck.position + (Vector3)(workspace), Vector2.down, ledgeCheck.position.y - wallCheck.position.y, playerData.whatIsGround);
+        float yDistance = yHit.distance;
+
+        workspace.Set(wallCheck.position.x + (xDistance * FacingDirection), ledgeCheck.position.y - yDistance);
+        return workspace;
+    }
 
     private void AnimationTrigger()
     {

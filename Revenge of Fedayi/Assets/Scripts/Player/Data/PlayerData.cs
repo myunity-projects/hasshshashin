@@ -16,7 +16,12 @@ public class PlayerData : ScriptableObject
     public float coyoteTime = 0.2f;
     public float jumpHeightMultiplier = 0.5f;
 
+    [Header("Ledge Climb State")]
+    public Vector2 startOffSet;
+    public Vector2 stopOffSet;
+
     [Header("Check variables")]
     public float groundCheckRadius = 0.3f;
+    public float wallCheckDistance = 0.5f;
     public LayerMask whatIsGround;
 }
