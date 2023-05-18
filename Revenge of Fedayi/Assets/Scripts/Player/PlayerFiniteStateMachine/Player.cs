@@ -14,6 +14,8 @@ public class Player : MonoBehaviour
     public PlayerInAirState InAirState { get; private set; }
     public PlayerLandState LandState { get; private set; }
     public PlayerWallGrabState WallGrabState { get; private set; }
+    public PlayerWallClimbState WallClimbState { get; private set; }
+    public PlayerWallSlideState WallSlideState { get; private set; }
     public PlayerLedgeClimbState LedgeClimbState { get; private set; }
     public PlayerAttackState PrimaryAttackState { get; private set; }
     public PlayerAttackState SecondaryAttackState { get; private set; }
@@ -57,8 +59,10 @@ public class Player : MonoBehaviour
     private string jumpAnimName = "inAir";
     private string landAnimName = "land";
     private string wallGrabAnimName = "wallGrab";
+    private string wallClimbAnimName = "wallClimb";
+    private string wallSlideAnimName = "wallSlide";
     private string ledgeClimbAnimName = "ledgeClimbState";
-    private string attackAnimName = "attack";
+    private string attackAnimName = "attack";    
 
     #endregion
 
@@ -74,6 +78,8 @@ public class Player : MonoBehaviour
         InAirState = new PlayerInAirState(this, StateMachine, playerData, jumpAnimName);
         LandState = new PlayerLandState(this, StateMachine, playerData, landAnimName);
         WallGrabState = new PlayerWallGrabState(this, StateMachine, playerData, wallGrabAnimName);
+        WallClimbState = new PlayerWallClimbState(this, StateMachine, playerData, wallClimbAnimName);
+        WallSlideState = new PlayerWallSlideState(this, StateMachine, playerData, wallSlideAnimName);
         LedgeClimbState = new PlayerLedgeClimbState(this, StateMachine, playerData, ledgeClimbAnimName);
         PrimaryAttackState = new PlayerAttackState(this, StateMachine, playerData, attackAnimName);
         SecondaryAttackState = new PlayerAttackState(this, StateMachine, playerData, attackAnimName);

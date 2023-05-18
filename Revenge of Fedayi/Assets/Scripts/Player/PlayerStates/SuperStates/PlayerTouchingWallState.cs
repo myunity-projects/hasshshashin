@@ -4,8 +4,10 @@ using UnityEngine;
 
 public class PlayerTouchingWallState : PlayerState
 {
+    protected int xInput;
     protected int yInput;
 
+    protected bool isGrounded;
     protected bool grabInput;
     protected bool isTouchingLedge;
     protected bool isTouchingWall;
@@ -18,6 +20,7 @@ public class PlayerTouchingWallState : PlayerState
     {
         base.DoChecks();
 
+        isGrounded = player.CheckIfGrounded();
         isTouchingWall = player.CheckIfTouchingWall();
         isTouchingLedge = player.CheckIfTouchingLedge();
 
@@ -31,10 +34,19 @@ public class PlayerTouchingWallState : PlayerState
     {
         base.LogicUpdate();
 
+        xInput = player.InputHandler.NormalizedInputX;
         yInput = player.InputHandler.NormalizedInputY;
         grabInput = player.InputHandler.GrabInput;
 
-        if(isTouchingWall && !isTouchingLedge)
+        if(isGrounded && !grabInput)
+        {
+            stateMachine.ChangeState(player.IdleState);
+        }
+        else if(!isTouchingWall || (xInput != player.FacingDirection && !grabInput))
+        {
+            stateMachine.ChangeState(player.InAirState);
+        }
+        else if(isTouchingWall && !isTouchingLedge)
         {
             stateMachine.ChangeState(player.LedgeClimbState);
         }

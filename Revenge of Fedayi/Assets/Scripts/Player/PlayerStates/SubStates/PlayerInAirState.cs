@@ -13,7 +13,7 @@ public class PlayerInAirState : PlayerState
     private bool isJumping;
     private bool isTouchingWall;
     private bool isTouchingLedge;
-    private bool grabInut;    
+    private bool grabInput;    
 
     public PlayerInAirState(Player player, PlayerStateMachine stateMachine, PlayerData playerData, string animBoolName) : base(player, stateMachine, playerData, animBoolName)
     {
@@ -52,25 +52,38 @@ public class PlayerInAirState : PlayerState
         xInput = player.InputHandler.NormalizedInputX;
         jumpInput = player.InputHandler.JumpInput;
         jumpInputStop = player.InputHandler.JumpInputStop;
-        grabInut = player.InputHandler.GrabInput;
+        grabInput = player.InputHandler.GrabInput;
 
         CheckJumpMultiplier();
 
-        if(isGrounded && player.CurrentVelocity.y < 0.01f)
+        if (player.InputHandler.AttackInputs[(int)CombatInputs.primary])
+        {
+            stateMachine.ChangeState(player.PrimaryAttackState);
+        }
+        else if (player.InputHandler.AttackInputs[(int)CombatInputs.secondary])
+        {
+            stateMachine.ChangeState(player.SecondaryAttackState);
+        }
+        else if (isGrounded && player.CurrentVelocity.y < 0.01f)
         {
             stateMachine.ChangeState(player.LandState);
         }
         else if(isTouchingWall && !isTouchingLedge)
         {
+            player.InputHandler.UseJumpInput();
             stateMachine.ChangeState(player.LedgeClimbState);
         }
         else if(jumpInput && player.JumpState.CanJump())
         {
             stateMachine.ChangeState(player.JumpState);
         }
-        else if(isTouchingWall && grabInut)
+        else if(isTouchingWall && grabInput)
         {
             stateMachine.ChangeState(player.WallGrabState);
+        }
+        else if(isTouchingWall && xInput == player.FacingDirection && player.CurrentVelocity.y <= 0)
+        {
+            stateMachine.ChangeState(player.WallSlideState);
         }
         else
         {
