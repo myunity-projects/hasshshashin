@@ -9,6 +9,7 @@ public class PlayerTouchingWallState : PlayerState
 
     protected bool isGrounded;
     protected bool grabInput;
+    protected bool jumpInput;
     protected bool isTouchingLedge;
     protected bool isTouchingWall;
 
@@ -37,8 +38,14 @@ public class PlayerTouchingWallState : PlayerState
         xInput = player.InputHandler.NormalizedInputX;
         yInput = player.InputHandler.NormalizedInputY;
         grabInput = player.InputHandler.GrabInput;
+        jumpInput = player.InputHandler.JumpInput;
 
-        if(isGrounded && !grabInput)
+        if(jumpInput)
+        { 
+            player.WallJumpState.DetermineWallJumpDirection(isTouchingWall);
+            stateMachine.ChangeState(player.WallJumpState);
+        }
+        else if(isGrounded && !grabInput)
         {
             stateMachine.ChangeState(player.IdleState);
         }

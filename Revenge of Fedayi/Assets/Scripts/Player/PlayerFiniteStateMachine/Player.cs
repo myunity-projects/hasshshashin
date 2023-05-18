@@ -16,6 +16,7 @@ public class Player : MonoBehaviour
     public PlayerWallGrabState WallGrabState { get; private set; }
     public PlayerWallClimbState WallClimbState { get; private set; }
     public PlayerWallSlideState WallSlideState { get; private set; }
+    public PlayerWallJumpState WallJumpState { get; private set; }
     public PlayerLedgeClimbState LedgeClimbState { get; private set; }
     public PlayerAttackState PrimaryAttackState { get; private set; }
     public PlayerAttackState SecondaryAttackState { get; private set; }
@@ -60,7 +61,7 @@ public class Player : MonoBehaviour
     private string landAnimName = "land";
     private string wallGrabAnimName = "wallGrab";
     private string wallClimbAnimName = "wallClimb";
-    private string wallSlideAnimName = "wallSlide";
+    private string wallSlideAnimName = "wallSlide";    
     private string ledgeClimbAnimName = "ledgeClimbState";
     private string attackAnimName = "attack";    
 
@@ -80,6 +81,7 @@ public class Player : MonoBehaviour
         WallGrabState = new PlayerWallGrabState(this, StateMachine, playerData, wallGrabAnimName);
         WallClimbState = new PlayerWallClimbState(this, StateMachine, playerData, wallClimbAnimName);
         WallSlideState = new PlayerWallSlideState(this, StateMachine, playerData, wallSlideAnimName);
+        WallJumpState = new PlayerWallJumpState(this, StateMachine, playerData, jumpAnimName);
         LedgeClimbState = new PlayerLedgeClimbState(this, StateMachine, playerData, ledgeClimbAnimName);
         PrimaryAttackState = new PlayerAttackState(this, StateMachine, playerData, attackAnimName);
         SecondaryAttackState = new PlayerAttackState(this, StateMachine, playerData, attackAnimName);
@@ -131,9 +133,17 @@ public class Player : MonoBehaviour
         CurrentVelocity = workspace;
     }
 
+    public void SetVelocity(float velocity, Vector2 angle, int direction)
+    {
+        angle.Normalize();
+        workspace.Set(angle.x * velocity * direction, angle.y * velocity);
+        PlayerRigidbody2D.velocity = workspace;
+        CurrentVelocity = workspace;
+    }
+
     #endregion
 
-    #region CheckFunctions
+    #region Check Functions
 
     public bool CheckIfGrounded()
     {
@@ -143,6 +153,11 @@ public class Player : MonoBehaviour
     public bool CheckIfTouchingWall()
     {
         return Physics2D.Raycast(wallCheck.position, Vector2.right * FacingDirection, playerData.wallCheckDistance, playerData.whatIsGround);
+    }
+
+    public bool CheckIfTouchingWallBack()
+    {
+        return Physics2D.Raycast(wallCheck.position, Vector2.right * -FacingDirection, playerData.wallCheckDistance, playerData.whatIsGround);
     }
 
     public bool CheckIfTouchingLedge()
